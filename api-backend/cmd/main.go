@@ -28,7 +28,6 @@ func main() {
 	// Calls setting u0p handler func for request path in default server multiplexer
 	http.HandleFunc("/", getRoot)
 	http.HandleFunc("/hello", getHello)
-	fmt.Println(" hellow")
 
 	// Once handlers set up this is called to tell global HTTP server to listen for incoming requests 
 	// Here we use port :3000

@@ -1,1 +1,0 @@
-go build -ldflags "-s -w" -o api-backend.bin ./cmd/main.go 

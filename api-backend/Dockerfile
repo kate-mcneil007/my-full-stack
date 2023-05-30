@@ -1,9 +1,7 @@
-FROM alpine
+FROM golang:1.20-alpine AS builder 
 
-COPY ./api-backend/api-backend.bin /
+WORKDIR /go/src/app
 
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+COPY . .
 
-RUN apk update && apk add ca-certificates curl && apk add bash && rm -rf /var/cache/apk/*
-
-ENTRYPOINT ["/api-backend.bin"]
+RUN GOOS=linux GOARCH=amd64 GOARM=7 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o main cmd/*.go
