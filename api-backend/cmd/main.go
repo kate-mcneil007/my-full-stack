@@ -4,11 +4,13 @@ package main
 
 // Required packages for program 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"github.com/jackc/pgx/v5"
 )
 
 // Both functions accept same args

@@ -1,6 +1,9 @@
 import (
 	"github.com/jackc/pgx/v5"
 	"context"
+	// Added this 
+	"fmt" 
+	"os"
 )
 
 func ConnectPostgreSqlDb(ctx context.Context) {
@@ -8,4 +11,8 @@ func ConnectPostgreSqlDb(ctx context.Context) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
+	}
+	defer conn.Close()
 }
+// Database operations go here...
+// Can use 'conn' object to execute inserts and queries.
