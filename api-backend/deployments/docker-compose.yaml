@@ -19,14 +19,14 @@ services:
     image: postgres:14.1-alpine
     restart: always
     environment:
-      - POSTGRES_DB=api-backend
+      - POSTGRES_DB=testDB
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
-      - '5432:5432' 
+      - '5433:5432' 
     volumes: 
-      - db:/var/lib/postgresql/data
       - "../scripts/seed_db.sql:/go/scripts/seed_db.sql"
+      - db:/var/lib/postgresql/data
 volumes:
   db:
     driver: local
