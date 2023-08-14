@@ -1,4 +1,3 @@
-// Is this right?
 package database
 
 import (
@@ -101,4 +100,21 @@ func DeleteItem(conn *pgx.Conn, itemID int) error {
 	}
 
 	return nil
+}
+
+func GetItemByID(conn *pgx.Conn, itemID int) (*Item, error) {
+	query := "SELECT id, product_name, quantity, price FROM inventory WHERE id = $1"
+
+	row := conn.QueryRow(context.Background(), query, itemID)
+
+	var item Item
+	err := row.Scan(&itemID, &item.ProductName, &item.Quantity, &item.Price)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("Item not found")
+		}
+		return nil, err
+	}
+
+	return &item, nil
 }
