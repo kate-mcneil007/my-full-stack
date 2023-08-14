@@ -1,4 +1,4 @@
-module github.com/kate-mcneil007/my-full-stack
+module github.com/kate-mcneil007/my-full-stack/api-backend
 
 go 1.20
 
