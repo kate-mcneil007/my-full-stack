@@ -30,14 +30,14 @@ func ConnectPostgreSqlDb(ctx context.Context) (*pgx.Conn, error) {
 // Can use 'conn' object to execute inserts and queries.
 
 // Entry in inventory table
-type Item struct {
+type Inventory struct {
 	ID          int     `json:"id" db:"id"`
 	ProductName string  `json:"product_name" db:"product_name"`
 	Quantity    int     `json:"quantity" db:"quantity"`
 	Price       float64 `json:"price" db:"price"`
 }
 
-func CreateItem(conn *pgx.Conn, item *Item) error {
+func CreateItem(conn *pgx.Conn, item *Inventory) error {
 	query := "INSERT INTO inventory (product_name, quantity, price) VALUES ($1, $2, $3)"
 
 	// Execute query using 'conn' object and the item's properties
@@ -49,8 +49,8 @@ func CreateItem(conn *pgx.Conn, item *Item) error {
 	return nil
 }
 
-func ReadItems(conn *pgx.Conn) ([]Item, error) {
-	var items []Item
+func ReadItems(conn *pgx.Conn) ([]Inventory, error) {
+	var items []Inventory
 
 	query := "SELECT id, product_name, quantity, price FROM inventory"
 
@@ -63,7 +63,7 @@ func ReadItems(conn *pgx.Conn) ([]Item, error) {
 
 	// Iterate through the result rows and populate the items slice
 	for rows.Next() {
-		var item Item
+		var item Inventory
 		err := rows.Scan(&item.ID, &item.ProductName, &item.Quantity, &item.Price)
 		if err != nil {
 			return nil, err
@@ -78,7 +78,7 @@ func ReadItems(conn *pgx.Conn) ([]Item, error) {
 	return items, nil
 }
 
-func UpdateItem(conn *pgx.Conn, item *Item) error {
+func UpdateItem(conn *pgx.Conn, item *Inventory) error {
 	query := "UPDATE inventory SET product_name = $1, quantity = $2, price = $3 WHERE id = $4"
 
 	// Execute query using 'conn' obj and the item's properties
@@ -102,19 +102,19 @@ func DeleteItem(conn *pgx.Conn, itemID int) error {
 	return nil
 }
 
-func GetItemByID(conn *pgx.Conn, itemID int) (*Item, error) {
+func GetItemByID(conn *pgx.Conn, itemID int) (*Inventory, error) {
 	query := "SELECT id, product_name, quantity, price FROM inventory WHERE id = $1"
 
 	row := conn.QueryRow(context.Background(), query, itemID)
 
-	var item Item
-	err := row.Scan(&itemID, &item.ProductName, &item.Quantity, &item.Price)
+	var inventory Inventory
+	err := row.Scan(&itemID, &inventory.ProductName, &inventory.Quantity, &inventory.Price)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("Item not found")
+			return nil, fmt.Errorf("item not found")
 		}
 		return nil, err
 	}
 
-	return &item, nil
+	return &inventory, nil
 }

@@ -7,9 +7,10 @@ import (
 	"context"
 	"log"
 
-	"github.com/kate-mcneil007/my-full-stack/api-backend/pkg/controller"
+	controller "github.com/kate-mcneil007/my-full-stack/api-backend/pkg/controller"
 	database "github.com/kate-mcneil007/my-full-stack/api-backend/pkg/db"
 	"github.com/kate-mcneil007/my-full-stack/api-backend/pkg/handler"
+	"github.com/kate-mcneil007/my-full-stack/api-backend/pkg/service"
 )
 
 func main() {
@@ -20,20 +21,7 @@ func main() {
 	}
 	defer conn.Close(ctx)
 
-	// handler.SetupRoutes()
-	// // Once handlers set up this is called to tell global HTTP server to listen for incoming requests
-	// // Here we use port :3000
-	// err = http.ListenAndServe(":3000", nil)
-	// // Checking for shut down/ closed server
-	// // Also used to show why server stopped
-	// if errors.Is(err, http.ErrServerClosed) {
-	// 	fmt.Printf("server closed\n")
-	// 	// Checks any other error
-	// } else if err != nil {
-	// 	fmt.Printf("error starting server: %s\n", err)
-	// 	os.Exit(1)
-	// }
-
-	c := controller.NewController()
+	s := service.NewService()
+	c := controller.NewController(s)
 	handler.SetupRoutes(c)
 }

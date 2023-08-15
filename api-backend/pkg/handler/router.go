@@ -3,12 +3,12 @@ package handler
 //package main
 
 import (
-	"github.com/kate-mcneil007/my-full-stack/api-backend/pkg/controller"
+	controller "github.com/kate-mcneil007/my-full-stack/api-backend/pkg/controller"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func SetupRoutes(c controller.Controller) {
+func SetupRoutes(c controller.HandlerInterface) {
 	// Echo instance
 	e := echo.New()
 
@@ -17,10 +17,10 @@ func SetupRoutes(c controller.Controller) {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/hello", c.hello)
-	e.POST("/inventory", c.createInventoryItem)
-	e.GET("/inventory/:id", c.getInventoryItem)
-	e.PUT("/inventory", c.updateInventoryItem)
-	e.DELETE("/inventory", c.deleteInventoryItem)
+	e.GET("/hello", c.Hello)
+	e.POST("/inventory", c.CreateInventoryItem)
+	e.GET("/inventory/:id", c.GetInventoryItem)
+	e.PUT("/inventory", c.UpdateInventoryItem)
+	e.DELETE("/inventory", c.DeleteInventoryItem)
 	e.Logger.Fatal(e.Start(":3000"))
 }
