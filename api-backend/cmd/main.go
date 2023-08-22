@@ -14,13 +14,24 @@ import (
 )
 
 func main() {
+	// returns a non-nil, empty Context
+	// Is never canceled, has no values, and has no deadline
+	// Typically used as the top-level Context for incoming requests
 	ctx := context.Background()
+
+	// Variable named conn to store the connection to the PostgreSQL database
+	// conn holds connection object used to interact with the database
+	// err stores potential errors
+	// Our non-nil, empty context variable is passed into func ConnectPostgresSqlDb found in package "database"
 	conn, err := database.ConnectPostgreSqlDb(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close(ctx)
 
+	// NewService establishes new service structure
+	// This is then passed to create a new instance of the Controller
+	// Routes are then set up using this new controller isntance
 	s := service.NewService()
 	c := controller.NewController(s)
 	handler.SetupRoutes(c)

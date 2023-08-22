@@ -1,5 +1,6 @@
 package pkg
 
+// ANYWHERE WHERE THIS STRUCT IS USED NOW NEEDS TO IMPORT PKG
 type Inventory struct {
 	ID          int     `json:"id" db:"id"`
 	ProductName string  `json:"product_name" db:"product_name"`

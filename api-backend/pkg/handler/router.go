@@ -1,7 +1,5 @@
 package handler
 
-//package main
-
 import (
 	controller "github.com/kate-mcneil007/my-full-stack/api-backend/pkg/controller"
 	"github.com/labstack/echo/v4"
