@@ -4,45 +4,46 @@ import (
 	"context"
 	"fmt"
 
+	// pgx is how database calls are made
 	"github.com/jackc/pgx/v4"
 	"github.com/kate-mcneil007/my-full-stack/api-backend/pkg"
-	"github.com/kate-mcneil007/my-full-stack/api-backend/pkg/service"
 )
 
 // ADD DB INTERFACE HERE
 type DatabaseInterface interface {
-	CreateInventoryItem() (pkg.Inventory, error)
+	CreateInventoryItem(context.Context, pkg.Inventory) (pkg.Inventory, error)
 	GetInventoryItem(context.Context, int) (pkg.Inventory, error)
 	UpdateInventoryItem(context.Context, pkg.Inventory) (pkg.Inventory, error)
-	DeleteInventoryItem() (bool, error)
+	DeleteInventoryItem(context.Context, int) (bool, error)
+	GetItemByID(conn *pgx.Conn, itemID int) (*pkg.Inventory, error)
 }
 
 // Service implements the HandlerInterface
 type Database struct {
-	conn *pgx.Conn
+	Conn *pgx.Conn
 }
 
-// NewController creates a new instance of the Controller
-func NewController(s *service.Service) HandlerInterface {
-	return &Controller{
-		service: s,
+func NewDatabase(conn *pgx.Conn) DatabaseInterface {
+	// & makes the var turn into a pointer
+	return &Database{
+		Conn: conn,
 	}
 }
 
-func (d *Database) CreateItem(conn *pgx.Conn, item *Inventory) error {
+func (d *Database) CreateInventoryItem(ctx context.Context, item pkg.Inventory) (pkg.Inventory, error) {
 	query := "INSERT INTO inventory (product_name, quantity, price) VALUES ($1, $2, $3)"
 
 	// Execute query using 'conn' object and the item's properties
-	_, err := d.conn.Exec(context.Background(), query, item.ProductName, item.Quantity, item.Price)
+	_, err := d.Conn.Exec(context.Background(), query, item.ProductName, item.Quantity, item.Price)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return
 }
 
-func ReadItems(conn *pgx.Conn) ([]Inventory, error) {
-	var items []Inventory
+func GetInventoryItem(ctx context.Context, item int) (pkg.Inventory, error) {
+	var items []pkg.Inventory
 
 	query := "SELECT id, product_name, quantity, price FROM inventory"
 
@@ -55,7 +56,7 @@ func ReadItems(conn *pgx.Conn) ([]Inventory, error) {
 
 	// Iterate through the result rows and populate the items slice
 	for rows.Next() {
-		var item Inventory
+		var item pkg.Inventory
 		err := rows.Scan(&item.ID, &item.ProductName, &item.Quantity, &item.Price)
 		if err != nil {
 			return nil, err
@@ -70,7 +71,7 @@ func ReadItems(conn *pgx.Conn) ([]Inventory, error) {
 	return items, nil
 }
 
-func UpdateItem(conn *pgx.Conn, item *Inventory) error {
+func UpdateInventoryItem(context.Context, pkg.Inventory) (pkg.Inventory, error) {
 	query := "UPDATE inventory SET product_name = $1, quantity = $2, price = $3 WHERE id = $4"
 
 	// Execute query using 'conn' obj and the item's properties
@@ -82,7 +83,7 @@ func UpdateItem(conn *pgx.Conn, item *Inventory) error {
 	return nil
 }
 
-func DeleteItem(conn *pgx.Conn, itemID int) error {
+func DeleteInventoryItem(context.Context, int) (bool, error) {
 	query := "DELETE FROM inventory WHERE id = $1"
 
 	// Execute query using 'conn' obj & item ID
@@ -94,12 +95,12 @@ func DeleteItem(conn *pgx.Conn, itemID int) error {
 	return nil
 }
 
-func GetItemByID(conn *pgx.Conn, itemID int) (*Inventory, error) {
+func GetItemByID(conn *pgx.Conn, itemID int) (*pkg.Inventory, error) {
 	query := "SELECT id, product_name, quantity, price FROM inventory WHERE id = $1"
 
 	row := conn.QueryRow(context.Background(), query, itemID)
 
-	var inventory Inventory
+	var inventory pkg.Inventory
 	err := row.Scan(&itemID, &inventory.ProductName, &inventory.Quantity, &inventory.Price)
 	if err != nil {
 		if err == pgx.ErrNoRows {
