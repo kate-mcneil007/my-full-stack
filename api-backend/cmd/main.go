@@ -32,7 +32,8 @@ func main() {
 	// NewService establishes new service structure
 	// This is then passed to create a new instance of the Controller
 	// Routes are then set up using this new controller isntance
-	s := service.NewService()
+	d := database.NewDatabase(conn)
+	s := service.NewService(d)
 	c := controller.NewController(s)
 	handler.SetupRoutes(c)
 }

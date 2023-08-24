@@ -15,7 +15,6 @@ type DatabaseInterface interface {
 	GetInventoryItem(context.Context, int) (pkg.Inventory, error)
 	UpdateInventoryItem(context.Context, pkg.Inventory) (pkg.Inventory, error)
 	DeleteInventoryItem(context.Context, int) (bool, error)
-	GetItemByID(conn *pgx.Conn, itemID int) (*pkg.Inventory, error)
 }
 
 // Service implements the HandlerInterface
@@ -31,83 +30,58 @@ func NewDatabase(conn *pgx.Conn) DatabaseInterface {
 }
 
 func (d *Database) CreateInventoryItem(ctx context.Context, item pkg.Inventory) (pkg.Inventory, error) {
-	query := "INSERT INTO inventory (product_name, quantity, price) VALUES ($1, $2, $3)"
+	// Return whole object
+	query := "INSERT INTO inventory (product_name, quantity, price) VALUES (:product_name, :quantity, :price) RETURNING id, product_name, quanitity, price"
+
+	// Needs to be inventory obj to be returned
+	var inventory pkg.Inventory
 
 	// Execute query using 'conn' object and the item's properties
-	_, err := d.Conn.Exec(context.Background(), query, item.ProductName, item.Quantity, item.Price)
+	// Scan inventory obj
+	err := d.Conn.QueryRow(context.Background(), query, item.ProductName, item.Quantity, item.Price).Scan(&inventory)
 	if err != nil {
-		return err
+		return pkg.Inventory{}, err
 	}
 
-	return
+	return inventory, nil
 }
 
-func GetInventoryItem(ctx context.Context, item int) (pkg.Inventory, error) {
-	var items []pkg.Inventory
+func (d *Database) GetInventoryItem(ctx context.Context, itemID int) (pkg.Inventory, error) {
+	query := "SELECT id, product_name, quantity, price FROM inventory WHERE id = :id"
 
-	query := "SELECT id, product_name, quantity, price FROM inventory"
+	row := d.Conn.QueryRow(context.Background(), query, pkg.Inventory{ID: itemID})
 
-	// Execute query using 'conn' object
-	rows, err := conn.Query(context.Background(), query)
+	var inventory pkg.Inventory
+	err := row.Scan(&inventory)
 	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Iterate through the result rows and populate the items slice
-	for rows.Next() {
-		var item pkg.Inventory
-		err := rows.Scan(&item.ID, &item.ProductName, &item.Quantity, &item.Price)
-		if err != nil {
-			return nil, err
+		if err == pgx.ErrNoRows {
+			return pkg.Inventory{}, fmt.Errorf("item not found")
 		}
-		items = append(items, item)
+		return pkg.Inventory{}, err
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return items, nil
+	return inventory, nil
 }
 
-func UpdateInventoryItem(context.Context, pkg.Inventory) (pkg.Inventory, error) {
-	query := "UPDATE inventory SET product_name = $1, quantity = $2, price = $3 WHERE id = $4"
-
+func (d *Database) UpdateInventoryItem(ctx context.Context, item pkg.Inventory) (pkg.Inventory, error) {
+	query := "UPDATE inventory SET product_name = :product_name, quantity = :quantity, price = :price WHERE id = :id returning id, product_name, quanitity, price"
+	var inventory pkg.Inventory
 	// Execute query using 'conn' obj and the item's properties
-	_, err := conn.Exec(context.Background(), query, item.ProductName, item.Quantity, item.Price, item.ID)
+	err := d.Conn.QueryRow(context.Background(), query, item).Scan(&inventory)
 	if err != nil {
-		return err
+		return pkg.Inventory{}, err
 	}
 
-	return nil
+	return inventory, nil
 }
 
-func DeleteInventoryItem(context.Context, int) (bool, error) {
+func (d *Database) DeleteInventoryItem(ctx context.Context, itemID int) (bool, error) {
 	query := "DELETE FROM inventory WHERE id = $1"
 
 	// Execute query using 'conn' obj & item ID
-	_, err := conn.Exec(context.Background(), query, itemID)
+	rows, err := d.Conn.Exec(context.Background(), query, itemID)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
-}
-
-func GetItemByID(conn *pgx.Conn, itemID int) (*pkg.Inventory, error) {
-	query := "SELECT id, product_name, quantity, price FROM inventory WHERE id = $1"
-
-	row := conn.QueryRow(context.Background(), query, itemID)
-
-	var inventory pkg.Inventory
-	err := row.Scan(&itemID, &inventory.ProductName, &inventory.Quantity, &inventory.Price)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, fmt.Errorf("item not found")
-		}
-		return nil, err
-	}
-
-	return &inventory, nil
+	return rows.RowsAffected() > 0, nil
 }
