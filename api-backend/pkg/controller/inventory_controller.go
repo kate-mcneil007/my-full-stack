@@ -45,6 +45,7 @@ So, our func points to struct Controller and passes in paramater var ctx of type
 The ctx parameter represents the context of the current HTTP request
 error is the return type, the func will return an error
 */
+// Read request body, unmarshall(?) into inventory obj, pass into service which should(?) pass it into the db
 func (c *Controller) CreateInventoryItem(ctx echo.Context) error {
 	// Var body is a new instance of the Inventory struct from pkg
 	body := pkg.Inventory{}
@@ -63,7 +64,7 @@ func (c *Controller) CreateInventoryItem(ctx echo.Context) error {
 		Returns resp & err
 	*/
 	resp, err := c.service.UpdateInventoryItem(ctx.Request().Context(), body)
-	// Erro handling
+	// Error handling
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, err)
 	}
@@ -74,11 +75,11 @@ func (c *Controller) CreateInventoryItem(ctx echo.Context) error {
 func (c *Controller) GetInventoryItem(ctx echo.Context) error {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, "Error")
+		return ctx.JSON(http.StatusBadRequest, "Error")
 	}
 	resp, err := c.service.GetInventoryItem(ctx.Request().Context(), id)
 	if err != nil {
-		return ctx.JSON(500, err)
+		return ctx.JSON(http.StatusInternalServerError, err)
 	}
 	// Your logic to retrieve an inventory item using the provided ID
 	return ctx.JSON(http.StatusOK, resp)

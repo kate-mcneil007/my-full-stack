@@ -15,11 +15,11 @@ type ServiceInterface interface {
 }
 
 type Service struct {
-	db *database.DatabaseInterface
+	db database.DatabaseInterface
 }
 
 // NewService creates a new instance of the Service
-func NewService(db database.DatabaseInterface) *Service {
+func NewService(db *database.Database) *Service {
 	return &Service{
 		db: db,
 	}
